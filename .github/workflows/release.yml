@@ -14,49 +14,40 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Cache nopeuttaa buildia
-      - name: Cache Homebrew
-        uses: actions/cache@v4
+      # ✅ TÄMÄ ON SE FIX
+      - name: Set up Java 8
+        uses: actions/setup-java@v4
         with:
-          path: |
-            ~/Library/Caches/Homebrew
-            /opt/homebrew
-          key: brew-${{ runner.os }}-${{ hashFiles('**/Makefile') }}
+          distribution: zulu
+          java-version: '8'
+
+      - name: Verify Java
+        run: |
+          java -version
+          which java
 
       - name: Install dependencies
         run: |
           brew update
           brew install ldid make wget
 
-      # (OPTIONAL) JRE download jos tarvitaan
-      - name: Download JRE (optional)
-        run: |
-          mkdir -p depends
-          echo "Skipping external artifact download (unstable)."
-
-      # Build step
       - name: Build IPA
         run: |
           set -e
-
           echo "=== START BUILD ==="
 
           make package || {
             echo "❌ Build failed, dumping debug info..."
-            echo "=== FILE TREE ==="
             find . | head -n 200
             exit 1
           }
 
-      # Debug: list output
       - name: Debug output
         run: |
           echo "=== SEARCHING FOR IPA ==="
           find . -name "*.ipa" || true
           find . -name "*.tipa" || true
-          find . -name "*.app" || true
 
-      # Upload artifacts
       - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
