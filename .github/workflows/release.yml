@@ -14,15 +14,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # ✅ TÄMÄ ON SE FIX
       - name: Set up Java 8
         uses: actions/setup-java@v4
         with:
           distribution: zulu
           java-version: '8'
 
+      # 🔥 TÄRKEIN FIX
+      - name: Fix JAVA_HOME
+        run: |
+          echo "JAVA_HOME=$(/usr/libexec/java_home -v 1.8)" >> $GITHUB_ENV
+          echo "$(/usr/libexec/java_home -v 1.8)/bin" >> $GITHUB_PATH
+
       - name: Verify Java
         run: |
+          echo "JAVA_HOME=$JAVA_HOME"
           java -version
           which java
 
@@ -44,7 +50,6 @@ jobs:
 
       - name: Debug output
         run: |
-          echo "=== SEARCHING FOR IPA ==="
           find . -name "*.ipa" || true
           find . -name "*.tipa" || true
 
